@@ -55,6 +55,11 @@ class AreaAnalysisRequest(BaseModel):
     points: List[Point]
 
 
+class CityTrendRequest(BaseModel):
+    latitude: float
+    longitude: float
+
+
 @app.get("/health")
 def health():
     return {
@@ -246,3 +251,16 @@ def analyze_area_endpoint(request: AreaAnalysisRequest):
         "ai_analysis": ai_analysis,
         "investigation_priority": investigation_priority
     }
+
+
+@app.post("/trends/city")
+def city_trend_endpoint(request: CityTrendRequest):
+    """Return yearly Sentinel-2 NDVI for a small area around a city center."""
+    delta = 0.08
+    points = [
+        {"lat": request.latitude - delta, "lng": request.longitude - delta},
+        {"lat": request.latitude - delta, "lng": request.longitude + delta},
+        {"lat": request.latitude + delta, "lng": request.longitude + delta},
+        {"lat": request.latitude + delta, "lng": request.longitude - delta},
+    ]
+    return analyze_historical_improved(points)

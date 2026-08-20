@@ -41,7 +41,7 @@ export default function HomePage() {
     {
       icon: <BarChart3 className="w-6 h-6" />,
       title: "Multi-Signal Analysis",
-      description: "Monitor vegetation, temperature, water, and moisture in one dashboard.",
+      description: "Analyze vegetation, temperature, water, and moisture in one dashboard.",
     },
     {
       icon: <Globe className="w-6 h-6" />,
@@ -54,7 +54,6 @@ export default function HomePage() {
     { value: "10+", label: "Satellite Datasets" },
     { value: "6", label: "Environmental Signals" },
     { value: "100%", label: "Cloud-Based" },
-    { value: "0", label: "Sensors Required" }
   ];
 
   const steps = [
@@ -103,11 +102,11 @@ export default function HomePage() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-slate-900 dark:text-white"
             >
-              Monitor Earth's Environment
+              Earth's Environment
               <br />
-              <span className="bg-gradient-to-r from-emerald-400 to-emerald-600 bg-clip-text text-transparent">
-                Without Any Sensors
-              </span>
+              {/* <span className="bg-gradient-to-r from-emerald-400 to-emerald-600 bg-clip-text text-transparent">
+              
+              </span> */}
             </motion.h1>
 
             <motion.p
@@ -146,7 +145,7 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto"
+              className="mx-auto mt-12 grid max-w-3xl grid-cols-2 gap-6 md:grid-cols-3"
             >
               {stats.map((stat, index) => (
                 <div key={index} className="text-center p-4 rounded-xl bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200 dark:border-slate-700 transition-colors">
@@ -229,7 +228,7 @@ export default function HomePage() {
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl" />
             <h2 className="text-2xl md:text-3xl font-bold text-white relative">
-              Ready to Monitor Your Environment?
+              Ready to Explore Your Environment?
             </h2>
             <p className="mt-4 text-emerald-100 max-w-2xl mx-auto relative">
               Start analyzing any area on Earth instantly. No setup required.

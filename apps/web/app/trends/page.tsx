@@ -26,31 +26,74 @@ import {
   BarChart3,
   LineChart as LineChartIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const ndviTrendData = [
-  { year: "2020", ndvi: 0.42, temperature: 22.1, precipitation: 450 },
-  { year: "2021", ndvi: 0.38, temperature: 22.8, precipitation: 380 },
-  { year: "2022", ndvi: 0.44, temperature: 21.9, precipitation: 520 },
-  { year: "2023", ndvi: 0.40, temperature: 23.2, precipitation: 340 },
-  { year: "2024", ndvi: 0.46, temperature: 22.5, precipitation: 490 },
-  { year: "2025", ndvi: 0.50, temperature: 22.0, precipitation: 470 },
-];
+const cities = {
+  Lahore: { latitude: 31.5204, longitude: 74.3587 },
+  Islamabad: { latitude: 33.6844, longitude: 73.0479 },
+  Peshawar: { latitude: 34.0151, longitude: 71.5249 },
+  Jheum: { latitude: 32.9425, longitude: 73.7257 },
+  Jhelum: { latitude: 32.9425, longitude: 73.7257 },
+  Gujranwala: { latitude: 32.1877, longitude: 74.1945 },
+  Gujrat: { latitude: 32.5736, longitude: 74.0787 },
+  Karachi: { latitude: 24.8607, longitude: 67.0011 },
+  Quetta: { latitude: 30.1798, longitude: 66.975 },
+  Faisalabad: { latitude: 31.4504, longitude: 73.135 },
+  Hyderabad: { latitude: 25.396, longitude: 68.3578 },
+} as const;
 
-const monthlyData = [
-  { month: "Jan", ndvi: 0.32, temp: 18.5, precip: 45 },
-  { month: "Feb", ndvi: 0.35, temp: 19.2, precip: 38 },
-  { month: "Mar", ndvi: 0.38, temp: 20.8, precip: 52 },
-  { month: "Apr", ndvi: 0.42, temp: 22.4, precip: 61 },
-  { month: "May", ndvi: 0.46, temp: 24.1, precip: 43 },
-  { month: "Jun", ndvi: 0.50, temp: 25.8, precip: 58 },
-  { month: "Jul", ndvi: 0.48, temp: 26.5, precip: 72 },
-  { month: "Aug", ndvi: 0.44, temp: 26.2, precip: 68 },
-  { month: "Sep", ndvi: 0.40, temp: 24.8, precip: 55 },
-  { month: "Oct", ndvi: 0.37, temp: 22.6, precip: 42 },
-  { month: "Nov", ndvi: 0.34, temp: 20.4, precip: 38 },
-  { month: "Dec", ndvi: 0.31, temp: 18.9, precip: 48 },
-];
+type CityName = keyof typeof cities;
+type TrendPoint = { year?: string; month?: string; temperature: number; precipitation: number; ndvi?: number };
+type WeatherResponse = { daily?: { time: string[]; temperature_2m_mean: (number | null)[]; precipitation_sum: (number | null)[] } };
+type NdviResponse = { yearly_data?: { year: number; ndvi: number }[] };
+
+const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function aggregateWeather(data: WeatherResponse): TrendPoint[] {
+  const daily = data.daily;
+  if (!daily) return [];
+  const buckets = new Map<string, { temperatures: number[]; precipitation: number }>();
+  daily.time.forEach((date, index) => {
+    const key = date.slice(0, 7);
+    const bucket = buckets.get(key) || { temperatures: [], precipitation: 0 };
+    const temperature = daily.temperature_2m_mean[index];
+    if (typeof temperature === "number") bucket.temperatures.push(temperature);
+    bucket.precipitation += daily.precipitation_sum[index] || 0;
+    buckets.set(key, bucket);
+  });
+  const monthly = Array.from(buckets.entries()).map(([key, bucket]) => ({
+    key,
+    temperature: bucket.temperatures.reduce((sum, value) => sum + value, 0) / Math.max(bucket.temperatures.length, 1),
+    precipitation: bucket.precipitation,
+  }));
+  return monthly.reduce<TrendPoint[]>((result, item) => {
+    const year = item.key.slice(0, 4);
+    const existing = result.find((entry) => entry.year === year);
+    if (existing) {
+      existing.temperature = (existing.temperature + item.temperature) / 2;
+      existing.precipitation += item.precipitation;
+    } else {
+      result.push({ year, temperature: item.temperature, precipitation: item.precipitation });
+    }
+    return result;
+  }, []);
+}
+
+function monthlyWeather(data: WeatherResponse): TrendPoint[] {
+  const daily = data.daily;
+  if (!daily) return [];
+  return monthNames.map((month, monthIndex) => {
+    const values = daily.time.reduce<{ temperatures: number[]; precipitation: number }>((result, date, index) => {
+      if (Number(date.slice(5, 7)) === monthIndex + 1) {
+        const temperature = daily.temperature_2m_mean[index];
+        if (typeof temperature === "number") result.temperatures.push(temperature);
+        result.precipitation += daily.precipitation_sum[index] || 0;
+      }
+      return result;
+    }, { temperatures: [], precipitation: 0 });
+    return { month, temperature: values.temperatures.reduce((sum, value) => sum + value, 0) / Math.max(values.temperatures.length, 1), precipitation: values.precipitation };
+  });
+}
 
 const regionData = [
   { name: "Forest", value: 45, color: "#10b981" },
@@ -79,9 +122,54 @@ type ChartType = "line" | "bar" | "area";
 export default function TrendsPage() {
   const [chartType, setChartType] = useState<ChartType>("line");
   const [timeRange, setTimeRange] = useState<"yearly" | "monthly">("yearly");
+  const [selectedCity, setSelectedCity] = useState<CityName>("Lahore");
+  const [weatherData, setWeatherData] = useState<WeatherResponse | null>(null);
+  const [ndviData, setNdviData] = useState<NdviResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [weatherError, setWeatherError] = useState<string | null>(null);
 
-  const currentData = timeRange === "yearly" ? ndviTrendData : monthlyData;
+  useEffect(() => {
+    const city = cities[selectedCity];
+    const params = new URLSearchParams({
+      latitude: String(city.latitude),
+      longitude: String(city.longitude),
+      start_date: "2020-01-01",
+      end_date: "2025-12-31",
+      daily: "temperature_2m_mean,precipitation_sum",
+      timezone: "Asia/Karachi",
+    });
+    setIsLoading(true);
+    setWeatherError(null);
+    const weatherRequest = fetch(`https://archive-api.open-meteo.com/v1/archive?${params}`)
+      .then((response) => {
+        if (!response.ok) throw new Error("Historical weather service is unavailable.");
+        return response.json() as Promise<WeatherResponse>;
+      })
+    const ndviRequest = fetch("http://127.0.0.1:8000/trends/city", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(city),
+    }).then((response) => response.ok ? response.json() as Promise<NdviResponse> : null).catch(() => null);
+
+    Promise.all([weatherRequest, ndviRequest])
+      .then(([weather, ndvi]) => {
+        setWeatherData(weather);
+        setNdviData(ndvi);
+      })
+      .catch((error: unknown) => setWeatherError(error instanceof Error ? error.message : "Unable to load historical trends."))
+      .finally(() => setIsLoading(false));
+  }, [selectedCity]);
+
+  const weatherTrendData = weatherData ? (timeRange === "yearly" ? aggregateWeather(weatherData) : monthlyWeather(weatherData)) : [];
+  const currentData = weatherTrendData.map((point) => {
+    const ndvi = point.year ? ndviData?.yearly_data?.find((item) => String(item.year) === point.year)?.ndvi : undefined;
+    return { ...point, temperature: Number(point.temperature.toFixed(1)), ndvi };
+  });
   const dataKey = timeRange === "yearly" ? "year" : "month";
+  const averageTemperature = currentData.length ? currentData.reduce((sum, item) => sum + item.temperature, 0) / currentData.length : 0;
+  const peakTemperature = currentData.length ? Math.max(...currentData.map((item) => item.temperature)) : 0;
+  const ndviValues = currentData.flatMap((item) => typeof item.ndvi === "number" ? [item.ndvi] : []);
+  const averageNdvi = ndviValues.length ? ndviValues.reduce((sum, value) => sum + value, 0) / ndviValues.length : null;
 
   const renderChart = () => {
     switch (chartType) {
@@ -102,20 +190,21 @@ export default function TrendsPage() {
             <Legend />
             <Line
               type="monotone"
-              dataKey="ndvi"
-              stroke="#10b981"
-              strokeWidth={2}
-              dot={{ fill: "#10b981", r: 4 }}
-              name="NDVI"
-            />
-            <Line
-              type="monotone"
               dataKey="temperature"
               stroke="#f59e0b"
               strokeWidth={2}
               dot={{ fill: "#f59e0b", r: 4 }}
               name="Temperature (C)"
             />
+            {timeRange === "yearly" && <Line
+              type="monotone"
+              dataKey="ndvi"
+              stroke="#10b981"
+              strokeWidth={2}
+              dot={{ fill: "#10b981", r: 4 }}
+              name="NDVI"
+              connectNulls
+            />}
           </LineChart>
         );
       case "bar":
@@ -133,8 +222,9 @@ export default function TrendsPage() {
               }}
             />
             <Legend />
-            <Bar dataKey="ndvi" fill="#10b981" name="NDVI" />
+            <Bar dataKey="temperature" fill="#f59e0b" name="Temperature (°C)" />
             <Bar dataKey="precipitation" fill="#3b82f6" name="Precipitation (mm)" />
+            {timeRange === "yearly" && <Bar dataKey="ndvi" fill="#10b981" name="NDVI" />}
           </BarChart>
         );
       case "area":
@@ -154,20 +244,21 @@ export default function TrendsPage() {
             <Legend />
             <Area
               type="monotone"
-              dataKey="ndvi"
-              stroke="#10b981"
-              fill="#10b981"
-              fillOpacity={0.3}
-              name="NDVI"
-            />
-            <Area
-              type="monotone"
               dataKey="temperature"
               stroke="#f59e0b"
               fill="#f59e0b"
               fillOpacity={0.3}
               name="Temperature (C)"
             />
+            {timeRange === "yearly" && <Area
+              type="monotone"
+              dataKey="ndvi"
+              stroke="#10b981"
+              fill="#10b981"
+              fillOpacity={0.3}
+              name="NDVI"
+              connectNulls
+            />}
           </AreaChart>
         );
     }
@@ -212,6 +303,17 @@ export default function TrendsPage() {
             </div>
 
             <div className="flex items-center gap-3 flex-wrap">
+              <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">City</span>
+                <select
+                  value={selectedCity}
+                  onChange={(event) => setSelectedCity(event.target.value as CityName)}
+                  className="bg-transparent font-semibold outline-none"
+                  aria-label="Select a Pakistani city"
+                >
+                  {Object.keys(cities).map((city) => <option key={city} value={city}>{city}</option>)}
+                </select>
+              </label>
               <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
                 <button
                   onClick={() => setTimeRange("yearly")}
@@ -278,26 +380,22 @@ export default function TrendsPage() {
             <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-                  NDVI and Temperature Trends
+                  {selectedCity} Temperature and NDVI Trends
                 </h2>
                 <div className="flex items-center gap-2 text-sm text-slate-500">
                   <Calendar className="w-4 h-4" />
-                  <span>{timeRange === "yearly" ? "2020-2025" : "Monthly"}</span>
+                  <span>{timeRange === "yearly" ? "2020-2025" : "Monthly averages"}</span>
                 </div>
               </div>
-              <div className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  {renderChart()}
-                </ResponsiveContainer>
-              </div>
+              {isLoading ? <div className="flex h-[400px] items-center justify-center text-sm text-slate-500">Loading historical weather for {selectedCity}...</div> : weatherError ? <div className="flex h-[400px] items-center justify-center text-sm text-red-500">{weatherError}</div> : <div className="h-[400px]"><ResponsiveContainer width="100%" height="100%">{renderChart()}</ResponsiveContainer></div>}
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
               {[
-                { label: "Avg NDVI", value: "0.43", change: "+8%", trend: "up" },
-                { label: "Avg Temp", value: "22.5C", change: "+0.4C", trend: "up" },
-                { label: "Peak NDVI", value: "0.50", change: "+12%", trend: "up" },
-                { label: "Risk Score", value: "45/100", change: "-5%", trend: "down" },
+                { label: "Average temperature", value: `${averageTemperature.toFixed(1)}°C`, change: selectedCity, trend: "up" },
+                { label: "Peak temperature", value: `${peakTemperature.toFixed(1)}°C`, change: "Historical daily mean", trend: "up" },
+                { label: "Data source", value: "Open-Meteo", change: "2020-2025 archive", trend: "up" },
+                { label: "Location", value: selectedCity, change: "Pakistan", trend: "up" },
               ].map((stat, index) => (
                 <div key={index} className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                   <p className="text-xs text-slate-500 dark:text-slate-400">{stat.label}</p>
@@ -387,12 +485,12 @@ export default function TrendsPage() {
               <h2 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Key Insights</h2>
               <div className="space-y-3">
                 <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg border border-emerald-200 dark:border-emerald-800/50">
-                  <p className="text-xs text-emerald-700 dark:text-emerald-300">NDVI is trending upward</p>
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">+8% increase over 5 years</p>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300">Historical NDVI</p>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">{averageNdvi === null ? "Unavailable" : `${averageNdvi.toFixed(2)} average from Sentinel-2`}</p>
                 </div>
                 <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800/50">
-                  <p className="text-xs text-amber-700 dark:text-amber-300">Temperature stable</p>
-                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">22.5C average</p>
+                  <p className="text-xs text-amber-700 dark:text-amber-300">{selectedCity} temperature average</p>
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">{averageTemperature.toFixed(1)}°C across the selected range</p>
                 </div>
                 <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800/50">
                   <p className="text-xs text-blue-700 dark:text-blue-300">Precipitation</p>

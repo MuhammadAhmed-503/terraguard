@@ -4,7 +4,6 @@ import "./globals.css";
 import ThemeProvider from "./components/ThemeProvider";
 import ThemeSubscriber from "./components/ThemeSubscriber";
 import Navbar from "./components/Navbar";
-import ThemeDebug from "./components/ThemeDebug";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,7 +17,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "TerraGuard - Satellite-Powered Environmental Intelligence",
-  description: "Analyze environmental conditions anywhere on Earth using satellite data. No sensors required.",
+  description: "Analyze environmental conditions anywhere on Earth using satellite data.",
+  icons: {
+    icon: "/LOGO.jpg",
+    apple: "/LOGO.jpg",
+  },
 };
 
 export default function RootLayout({
@@ -37,7 +40,6 @@ export default function RootLayout({
             <main className="min-h-screen pt-16">
               {children}
             </main>
-            <ThemeDebug />
           </ThemeSubscriber>
         </ThemeProvider>
       </body>

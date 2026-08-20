@@ -29,7 +29,7 @@ export default function AboutPage() {
     {
       icon: <Globe className="w-6 h-6" />,
       title: "Global Accessibility",
-      description: "Analyze any location on Earth. No sensors, no hardware, no field deployment required."
+      description: "Analyze any location on Earth using satellite-based environmental intelligence."
     },
     {
       icon: <Sparkles className="w-6 h-6" />,
@@ -42,7 +42,6 @@ export default function AboutPage() {
     { value: "10+", label: "Satellite Datasets" },
     { value: "6", label: "Environmental Signals" },
     { value: "100%", label: "Cloud-Based" },
-    { value: "0", label: "Sensors Required" }
   ];
 
   return (
@@ -75,7 +74,7 @@ export default function AboutPage() {
               Environmental Intelligence
               <br />
               <span className="bg-gradient-to-r from-emerald-500 to-emerald-700 bg-clip-text text-transparent">
-                Without Hardware
+                From Earth Observation
               </span>
             </motion.h1>
 
@@ -87,7 +86,7 @@ export default function AboutPage() {
             >
               TerraGuard is a satellite-powered environmental early-warning platform that converts
               planetary-scale Earth observation data into actionable environmental intelligence.
-              No sensors. No hardware. Just data.
+              Explore environmental conditions through trusted data.
             </motion.p>
 
             <motion.div
@@ -113,13 +112,13 @@ export default function AboutPage() {
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">Our Mission</h2>
             <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
               To make environmental intelligence accessible to everyone. We believe that
-              understanding our planet's health should not require expensive sensors or
-              specialized equipment.
+              understanding our planet's health should be accessible through clear,
+              reliable environmental intelligence.
             </p>
             <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
                 <Target className="w-8 h-8 text-emerald-500 mx-auto mb-4" />
-                <h3 className="font-semibold text-slate-900 dark:text-white">Monitor</h3>
+                <h3 className="font-semibold text-slate-900 dark:text-white">Explore</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
                   Any area on Earth using satellite data
                 </p>
@@ -211,10 +210,10 @@ export default function AboutPage() {
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 to-emerald-800 p-8 md:p-12 text-center">
             <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
             <h2 className="text-2xl md:text-3xl font-bold text-white relative">
-              Ready to Monitor Your Environment?
+              Ready to Explore Your Environment?
             </h2>
             <p className="mt-4 text-emerald-100 max-w-2xl mx-auto relative">
-              Start analyzing any area on Earth instantly. No sensors required.
+              Start analyzing any area on Earth instantly with satellite data.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4 relative">
               <a

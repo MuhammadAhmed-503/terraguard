@@ -47,7 +47,7 @@ export default function HowToUsePage() {
     {
       icon: <Rocket className="w-6 h-6" />,
       title: "Take Action",
-      description: "Use the investigation priority to decide where to focus further research or monitoring.",
+      description: "Use the investigation priority to decide where to focus further research and analysis.",
       tip: "TerraGuard helps you prioritize where humans should investigate first."
     }
   ];
@@ -58,8 +58,8 @@ export default function HowToUsePage() {
       description: "All satellite data comes from public sources. No subscription required."
     },
     {
-      title: "No Hardware",
-      description: "Analyze any area on Earth without deploying any sensors or equipment."
+      title: "Satellite Data",
+      description: "Analyze any area on Earth using publicly available Earth observation data."
     },
     {
       title: "Real-Time",
@@ -111,8 +111,8 @@ export default function HowToUsePage() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="mt-6 text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto"
             >
-              Monitor environmental conditions anywhere on Earth in just a few clicks.
-              No sensors, no hardware, no setup required.
+              Analyze environmental conditions anywhere on Earth in just a few clicks.
+              Use satellite data to explore changes over time.
             </motion.p>
           </div>
         </div>
@@ -165,7 +165,7 @@ export default function HowToUsePage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">Why TerraGuard?</h2>
             <p className="mt-3 text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-              Everything you need for environmental monitoring in one platform.
+              Everything you need for environmental analysis in one platform.
             </p>
           </div>
 

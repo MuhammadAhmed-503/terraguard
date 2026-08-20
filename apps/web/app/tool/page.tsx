@@ -356,6 +356,57 @@ function getPriorityColor(level: string): string {
   return colors[level] || "border-gray-500 bg-gray-950/20 text-gray-400";
 }
 
+function AnalysisCards({ analysisResult }: { analysisResult: AnalysisResult }) {
+  const chartData = analysisResult.historical_improved?.yearly_data || [];
+
+  return (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="rounded-2xl border border-emerald-600 bg-emerald-50 p-5 dark:border-emerald-800 dark:bg-emerald-950/40">
+        <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Environmental summary</p>
+        <p className="mt-2 text-xl font-bold text-slate-900 dark:text-white">{analysisResult.environmental_summary.overall_status}</p>
+        <p className="mt-3 text-sm font-medium text-emerald-700 dark:text-emerald-200">{analysisResult.environmental_summary.key_signal}</p>
+        <p className="mt-2 text-sm leading-6 text-slate-700 dark:text-slate-300">{analysisResult.environmental_summary.explanation}</p>
+      </div>
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900">
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Environmental risk</p>
+        <p className={`mt-2 text-3xl font-bold ${getRiskColor(analysisResult.risk.risk_level)}`}>{analysisResult.risk.risk_level}</p>
+        <p className="mt-1 font-medium text-slate-900 dark:text-white">{analysisResult.risk.condition}</p>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">Score: {analysisResult.risk.score}/100</p>
+        <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{analysisResult.risk.description}</p>
+      </div>
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900">
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Investigation priority</p>
+        <p className="mt-2 text-2xl font-bold text-orange-500">{analysisResult.investigation_priority?.level || "Unavailable"}</p>
+        <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{analysisResult.investigation_priority?.description || "No priority assessment available."}</p>
+      </div>
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900">
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Vegetation</p>
+        <p className="mt-2 text-3xl font-bold text-emerald-600 dark:text-emerald-400">{formatNumber(analysisResult.vegetation.mean_ndvi)}</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Mean NDVI</p>
+        <div className="mt-4 grid grid-cols-2 gap-3 text-sm"><div><p className="text-xs text-slate-500">MIN NDVI</p><p className="font-semibold text-slate-900 dark:text-white">{formatNumber(analysisResult.vegetation.min_ndvi)}</p></div><div><p className="text-xs text-slate-500">MAX NDVI</p><p className="font-semibold text-slate-900 dark:text-white">{formatNumber(analysisResult.vegetation.max_ndvi)}</p></div></div>
+      </div>
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900">
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Temperature</p>
+        <p className="mt-2 text-3xl font-bold text-amber-600 dark:text-amber-300">{formatNumber(analysisResult.temperature.mean_celsius, 1)}°C</p>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{analysisResult.temperature.source}</p>
+        <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-slate-900 dark:text-white"><span>Min {formatNumber(analysisResult.temperature.min_celsius, 1)}°C</span><span>Max {formatNumber(analysisResult.temperature.max_celsius, 1)}°C</span></div>
+      </div>
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900">
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Water</p>
+        <p className="mt-2 text-3xl font-bold text-sky-600 dark:text-sky-300">{formatNumber(analysisResult.water.current_water_percent, 1)}%</p>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{analysisResult.water.source}</p>
+        <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">Change vs baseline: {formatPercent(analysisResult.water.water_change_percent)}</p>
+        <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">Long-term occurrence: {formatNumber(analysisResult.water.historical_occurrence_percent, 1)}%</p>
+      </div>
+      {analysisResult.moisture && <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900"><p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Moisture</p><p className="mt-2 text-2xl font-bold text-cyan-600 dark:text-cyan-300">{analysisResult.moisture.moisture_status || "Unavailable"}</p><p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{analysisResult.moisture.current_precip_mm ?? "N/A"}mm precipitation</p><p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{formatPercent(analysisResult.moisture.change_percent)} vs baseline</p></div>}
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900"><p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Satellite image</p><p className="mt-2 font-medium text-slate-900 dark:text-white">{analysisResult.satellite.source}</p><p className="mt-2 break-all text-sm text-slate-500 dark:text-slate-400">{analysisResult.satellite.image_id || "No image ID available"}</p></div>
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900"><p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Historical NDVI</p><div className="mt-3 space-y-2">{analysisResult.historical.length === 0 ? <p className="text-sm text-slate-500">No historical data available.</p> : analysisResult.historical.map((item) => <div key={item.year} className="flex justify-between rounded-lg bg-white px-3 py-2 dark:bg-slate-950"><span className="text-sm text-slate-700 dark:text-slate-300">{item.year}</span><span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">{formatNumber(item.mean_ndvi)}</span></div>)}</div></div>
+      {analysisResult.ai_analysis && <div className="rounded-2xl border border-purple-600 bg-purple-50 p-5 dark:border-purple-800 dark:bg-purple-950/40 md:col-span-2 xl:col-span-3"><p className="text-xs font-semibold uppercase tracking-wider text-purple-700 dark:text-purple-300">AI analysis</p><p className="mt-3 text-sm leading-6 text-slate-800 dark:text-slate-200">{analysisResult.ai_analysis.executive_summary}</p>{analysisResult.ai_analysis.signals.length > 0 && <ul className="mt-3 grid gap-2 text-sm text-slate-700 dark:text-slate-300 md:grid-cols-2">{analysisResult.ai_analysis.signals.map((signal) => <li key={signal}>• {signal}</li>)}</ul>}</div>}
+      {chartData.length > 0 && <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900 md:col-span-2 xl:col-span-3"><p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">NDVI trend</p><div className="mt-3 h-[240px]"><ResponsiveContainer width="100%" height="100%"><LineChart data={chartData}><CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" /><XAxis dataKey="year" stroke="#64748b" fontSize={12} /><YAxis stroke="#64748b" fontSize={12} domain={[0, 1]} /><Tooltip /><Legend /><Line type="monotone" dataKey="ndvi" stroke="#10b981" strokeWidth={2} dot={{ fill: "#10b981", r: 4 }} name="NDVI" /></LineChart></ResponsiveContainer></div></div>}
+    </div>
+  );
+}
+
 export default function ToolPage() {
   const [apiStatus, setApiStatus] = useState<ApiStatus | null>(null);
   const [selectedArea, setSelectedArea] = useState<Point[]>([]);
@@ -427,25 +478,25 @@ export default function ToolPage() {
     <main className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-200">
       <header className="border-b border-slate-200 dark:border-slate-800 transition-colors">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between px-6 py-4">
-          <div>
+          {/* <div>
             <p className="text-xs font-medium uppercase tracking-[0.25em] text-emerald-600 dark:text-emerald-400 transition-colors">
               Planetary Intelligence
             </p>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white transition-colors">TerraGuard</h1>
-          </div>
-          <div className="rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 transition-colors">
+          </div> */}
+          {/* <div className="rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 transition-colors">
             {apiStatus ? (
               <span className="text-sm text-emerald-600 dark:text-emerald-400 transition-colors">● API Connected</span>
             ) : (
               <span className="text-sm text-red-600 dark:text-red-400 transition-colors">● API Offline</span>
             )}
-          </div>
+          </div> */}
         </div>
       </header>
 
       <div className="mx-auto max-w-[1600px] px-6 py-6">
-        <div className="grid min-h-[600px] grid-cols-1 gap-6 lg:grid-cols-[380px_1fr]">
-          <aside className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 overflow-y-auto max-h-[90vh] transition-colors">
+        <div className="flex flex-col gap-6">
+          <aside className="rounded-2xl border border-slate-200 bg-white p-6 transition-colors dark:border-slate-800 dark:bg-slate-900">
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400 transition-colors">ANALYSIS</p>
             <h2 className="mt-2 text-xl font-semibold text-slate-900 dark:text-white transition-colors">Environmental Explorer</h2>
             <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400 transition-colors">
@@ -501,7 +552,7 @@ export default function ToolPage() {
                   )}
 
                   {analysisResult && (
-                    <div className="mt-6 border-t border-slate-200 dark:border-slate-800 pt-6 space-y-4 transition-colors">
+                    <div className="mt-6 hidden border-t border-slate-200 dark:border-slate-800 pt-6 space-y-4 transition-colors">
                       {analysisResult.investigation_priority && (
                         <div className={`rounded-xl border-2 p-4 ${getPriorityColor(analysisResult.investigation_priority.level)} transition-colors`}>
                           <p className="text-xs uppercase tracking-wider opacity-70">INVESTIGATION PRIORITY</p>
@@ -781,7 +832,7 @@ export default function ToolPage() {
             </div>
           </aside>
 
-          <section className="h-[700px] overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 lg:h-auto transition-colors">
+          <section className="h-[520px] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-950 transition-colors sm:h-[620px]">
             <TerraGuardMap
               onAreaCreated={(points) => {
                 setSelectedArea(points);
@@ -789,6 +840,13 @@ export default function ToolPage() {
               }}
             />
           </section>
+
+          {analysisResult && (
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-950 sm:p-6">
+              <div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400">Analysis output</p><h2 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">Environmental data</h2></div><span className="text-xs text-slate-500 dark:text-slate-400">{analysisResult.point_count} points analyzed</span></div>
+              <AnalysisCards analysisResult={analysisResult} />
+            </section>
+          )}
         </div>
       </div>
     </main>
