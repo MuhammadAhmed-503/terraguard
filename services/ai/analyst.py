@@ -96,7 +96,7 @@ Format your response as JSON:
             # New SDK
             client = initialize_gemini()
             response = client.models.generate_content(
-                model="gemini-3.5-flash-lite",
+                model="gemini-2.0-flash",
                 contents=prompt
             )
         else:
