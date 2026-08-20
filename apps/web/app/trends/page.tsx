@@ -28,6 +28,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+
 const cities = {
   Lahore: { latitude: 31.5204, longitude: 74.3587 },
   Islamabad: { latitude: 33.6844, longitude: 73.0479 },
@@ -145,7 +147,7 @@ export default function TrendsPage() {
         if (!response.ok) throw new Error("Historical weather service is unavailable.");
         return response.json() as Promise<WeatherResponse>;
       })
-    const ndviRequest = fetch("http://127.0.0.1:8000/trends/city", {
+    const ndviRequest = fetch(`${API_BASE_URL}/trends/city`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(city),

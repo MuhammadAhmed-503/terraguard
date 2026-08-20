@@ -13,6 +13,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+
 type Point = {
   lat: number;
   lng: number;
@@ -415,7 +417,7 @@ export default function ToolPage() {
   const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/health")
+    fetch(`${API_BASE_URL}/health`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("API request failed");
@@ -437,7 +439,7 @@ export default function ToolPage() {
       setAnalysisError(null);
 
       const response = await fetch(
-        "http://127.0.0.1:8000/analysis/area",
+        `${API_BASE_URL}/analysis/area`,
         {
           method: "POST",
           headers: {
