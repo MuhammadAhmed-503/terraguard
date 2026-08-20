@@ -1,11 +1,33 @@
 import ee
+import json
+import os
 from typing import Dict, Any, Optional
 
 PROJECT_ID = "terraguard-505809"
 
+_initialized = False
+
 
 def initialize_earth_engine():
-    ee.Initialize(project=PROJECT_ID)
+    global _initialized
+    if _initialized:
+        return
+
+    service_account_json = os.environ.get("GEE_SERVICE_ACCOUNT_JSON")
+
+    if service_account_json:
+        # Running on Render (or anywhere with the env var set) — use service account.
+        service_account_info = json.loads(service_account_json)
+        credentials = ee.ServiceAccountCredentials(
+            service_account_info["client_email"],
+            key_data=service_account_json,
+        )
+        ee.Initialize(credentials, project=PROJECT_ID)
+    else:
+        # Local development — fall back to interactive/persistent credentials.
+        ee.Initialize(project=PROJECT_ID)
+
+    _initialized = True
 
 
 def analyze_area(points: list[dict]):
