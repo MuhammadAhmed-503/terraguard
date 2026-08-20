@@ -72,14 +72,12 @@ export default function TerraGuardMap({
           {points.length >= 2 && (
             <Polygon
               paths={points}
-              options={{
-                fillColor: "#10b981",
-                fillOpacity: 0.25,
-                strokeColor: "#10b981",
-                strokeOpacity: 0.9,
-                strokeWeight: 2,
-                clickable: false,
-              }}
+              fillColor="#10b981"
+              fillOpacity={0.25}
+              strokeColor="#10b981"
+              strokeOpacity={0.9}
+              strokeWeight={2}
+              clickable={false}
             />
           )}
         </Map>
