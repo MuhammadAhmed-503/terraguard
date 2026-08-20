@@ -521,7 +521,7 @@ export default function ToolPage() {
               </div>
               <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4 transition-colors">
                 <p className="text-xs text-slate-500 dark:text-slate-500 transition-colors">CLIMATE</p>
-                <p className="mt-1 font-medium text-slate-900 dark:text-white transition-colors">WeatherNext</p>
+                <p className="mt-1 font-medium text-slate-900 dark:text-white transition-colors">Landsat 8/9</p>
               </div>
               <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4 transition-colors">
                 <p className="text-xs text-slate-500 dark:text-slate-500 transition-colors">AI ANALYSIS</p>
