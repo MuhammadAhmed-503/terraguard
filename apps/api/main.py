@@ -42,6 +42,7 @@ app.add_middleware(
         "https://terraguard-lilac.vercel.app",
         "https://terraguard-two.vercel.app",
     ],
+    allow_origin_regex=r"https://[a-zA-Z0-9-]+\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
