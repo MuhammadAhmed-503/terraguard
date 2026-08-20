@@ -1,10 +1,12 @@
 import ee
 from typing import Dict, Any, Optional
 
+PROJECT_ID = "terraguard-505809"
+
 def analyze_moisture_area(points: list) -> Dict[str, Any]:
     """Analyze moisture/drought conditions using CHIRPS precipitation data."""
     try:
-        ee.Initialize()
+        ee.Initialize(project=PROJECT_ID)
         
         # Create polygon from points
         coords = [(p["lng"], p["lat"]) for p in points]
