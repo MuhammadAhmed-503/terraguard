@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   description: "Analyze environmental conditions anywhere on Earth using satellite data.",
   icons: {
     icon: "/LOGO.jpg",
+    shortcut: "/LOGO.jpg",
     apple: "/LOGO.jpg",
   },
 };
