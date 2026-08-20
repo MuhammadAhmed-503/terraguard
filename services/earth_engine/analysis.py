@@ -79,7 +79,8 @@ def analyze_area(points: list[dict]):
         ),
         geometry=polygon,
         scale=10,
-        maxPixels=1_000_000,
+        maxPixels=1_000_000_000,
+        bestEffort=True,
     )
 
     image_id = image.get("system:index").getInfo()
@@ -137,7 +138,8 @@ def analyze_temperature_area(points: list[dict]):
         ),
         geometry=polygon,
         scale=30,
-        maxPixels=1_000_000,
+        maxPixels=1_000_000_000,
+        bestEffort=True,
     )
 
     return {
@@ -199,7 +201,8 @@ def analyze_historical_area(points: list[dict]):
             reducer=ee.Reducer.mean(),
             geometry=polygon,
             scale=10,
-            maxPixels=1_000_000,
+            maxPixels=1_000_000_000,
+            bestEffort=True,
         )
 
         yearly_results.append({
