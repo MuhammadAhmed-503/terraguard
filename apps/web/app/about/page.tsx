@@ -208,7 +208,6 @@ export default function AboutPage() {
       <section className="py-16">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 to-emerald-800 p-8 md:p-12 text-center">
-            <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
             <h2 className="text-2xl md:text-3xl font-bold text-white relative">
               Ready to Explore Your Environment?
             </h2>

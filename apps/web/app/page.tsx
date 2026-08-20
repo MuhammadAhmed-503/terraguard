@@ -224,7 +224,6 @@ export default function HomePage() {
       <section className="py-16 bg-slate-50 dark:bg-slate-900/50 border-y border-slate-200 dark:border-slate-800 transition-colors">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 to-emerald-800 p-8 md:p-12 text-center">
-            <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl" />
             <h2 className="text-2xl md:text-3xl font-bold text-white relative">
