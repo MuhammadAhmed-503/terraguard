@@ -1,6 +1,9 @@
 import os
 import json
+import logging
 from typing import Dict, Any, Optional
+
+logger = logging.getLogger(__name__)
 
 # Try new SDK first, fallback to old SDK
 try:
@@ -22,28 +25,30 @@ def initialize_gemini():
     """Initialize Gemini with API key."""
     if not GEMINI_API_KEY:
         return None
-    
+
     if USE_NEW_SDK:
         # New SDK
         return genai.Client(api_key=GEMINI_API_KEY)
     else:
-        # Old SDK (deprecated)
+        # Old SDK (deprecated) — gemini-1.5-flash is retired/shutdown,
+        # use a currently supported model instead.
         genai.configure(api_key=GEMINI_API_KEY)
-        return genai.GenerativeModel("gemini-1.5-flash")
+        return genai.GenerativeModel("gemini-2.5-flash-lite")
 
 
 def generate_environmental_analysis(data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Generate AI-powered environmental analysis using Gemini.
-    
+
     Args:
         data: Analysis data containing vegetation, temperature, water, moisture, risk
-    
+
     Returns:
         Dict with executive_summary, signals, factors, confidence, investigation_priority
     """
     try:
         if not GEMINI_API_KEY:
+            logger.warning("GEMINI_API_KEY not set — skipping AI analysis.")
             return {
                 "status": "unavailable",
                 "message": "Gemini API key not configured",
@@ -53,7 +58,7 @@ def generate_environmental_analysis(data: Dict[str, Any]) -> Dict[str, Any]:
                 "confidence": "No AI analysis available",
                 "investigation_priority": "Unknown"
             }
-        
+
         # Prepare prompt
         prompt = f"""
 You are TerraGuard, an environmental intelligence AI. Analyze this environmental data and provide:
@@ -90,20 +95,20 @@ Format your response as JSON:
     "investigation_priority": "Critical/High/Medium/Low - reason"
 }}
 """
-        
+
         # Generate response
         if USE_NEW_SDK:
             # New SDK
             client = initialize_gemini()
             response = client.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-3.5-flash-lite",
                 contents=prompt
             )
         else:
             # Old SDK
             model = initialize_gemini()
             response = model.generate_content(prompt)
-        
+
         # Parse JSON from response
         try:
             # Extract JSON from markdown if present
@@ -112,9 +117,9 @@ Format your response as JSON:
                 text = text.split("```json")[1].split("```")[0]
             elif "```" in text:
                 text = text.split("```")[1].split("```")[0]
-            
+
             result = json.loads(text.strip())
-            
+
             return {
                 "status": "success",
                 "executive_summary": result.get("executive_summary", "Analysis complete."),
@@ -133,8 +138,10 @@ Format your response as JSON:
                 "confidence": "Medium - Raw AI response",
                 "investigation_priority": "Medium - Review AI analysis"
             }
-            
+
     except Exception as e:
+        # Log the real error so it shows up in Render logs for debugging.
+        logger.exception("Gemini AI analysis failed: %s", e)
         return {
             "status": "error",
             "message": str(e),
@@ -155,13 +162,13 @@ def generate_investigation_priority(data: Dict[str, Any]) -> Dict[str, Any]:
     ndvi_change = data.get('ndvi_change', 0)
     temp_anomaly = data.get('temperature_anomaly', 0)
     water_change = data.get('water_change', 0)
-    
+
     # Calculate priority score
     priority_score = 0
-    
+
     # Risk score contribution (0-50)
     priority_score += min(risk_score * 0.5, 50)
-    
+
     # NDVI change contribution (0-25)
     if ndvi_change is not None:
         if ndvi_change < -30:
@@ -172,7 +179,7 @@ def generate_investigation_priority(data: Dict[str, Any]) -> Dict[str, Any]:
             priority_score += 10
         elif ndvi_change < -5:
             priority_score += 5
-    
+
     # Temperature anomaly contribution (0-15)
     if temp_anomaly is not None:
         if temp_anomaly > 5:
@@ -181,7 +188,7 @@ def generate_investigation_priority(data: Dict[str, Any]) -> Dict[str, Any]:
             priority_score += 10
         elif temp_anomaly > 1:
             priority_score += 5
-    
+
     # Water change contribution (0-10)
     if water_change is not None:
         if water_change < -20:
@@ -190,7 +197,7 @@ def generate_investigation_priority(data: Dict[str, Any]) -> Dict[str, Any]:
             priority_score += 7
         elif water_change < -5:
             priority_score += 4
-    
+
     # Determine priority level
     if priority_score >= 70:
         level = "CRITICAL"
@@ -207,7 +214,7 @@ def generate_investigation_priority(data: Dict[str, Any]) -> Dict[str, Any]:
     else:
         level = "VERY LOW"
         description = "No significant environmental stress detected. Continue routine monitoring."
-    
+
     return {
         "level": level,
         "score": round(priority_score, 1),

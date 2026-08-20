@@ -3,4 +3,4 @@ uvicorn[standard]
 pydantic
 python-dotenv
 earthengine-api
-google-generativeai
+google-genai
